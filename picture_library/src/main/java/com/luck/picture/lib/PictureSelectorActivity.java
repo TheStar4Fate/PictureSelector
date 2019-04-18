@@ -92,10 +92,9 @@ public class PictureSelectorActivity extends PictureBaseActivity implements View
     private boolean isPlayAudio = false;
     private CustomDialog audioDialog;
     private int audioH;
-    private Handler mHandler = new Handler() {
+    private Handler mHandler = new Handler(new Handler.Callback() {
         @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
+        public boolean handleMessage(Message msg) {
             switch (msg.what) {
                 case SHOW_DIALOG:
                     showPleaseDialog();
@@ -104,8 +103,9 @@ public class PictureSelectorActivity extends PictureBaseActivity implements View
                     dismissDialog();
                     break;
             }
+            return false;
         }
-    };
+    });
 
     /**
      * EventBus 3.0 回调
@@ -496,8 +496,8 @@ public class PictureSelectorActivity extends PictureBaseActivity implements View
             boolean eqImg = pictureType.startsWith(PictureConfig.IMAGE);
             if (config.minSelectNum > 0 && config.selectionMode == PictureConfig.MULTIPLE) {
                 if (size < config.minSelectNum) {
-                    String str = eqImg ? getString(R.string.picture_min_img_num, config.minSelectNum)
-                            : getString(R.string.picture_min_video_num, config.minSelectNum);
+                    String str = eqImg ? getString(R.string.picture_min_img_num, String.valueOf(config.minSelectNum))
+                            : getString(R.string.picture_min_video_num, String.valueOf(config.minSelectNum));
                     ToastManage.s(mContext, str);
                     return;
                 }

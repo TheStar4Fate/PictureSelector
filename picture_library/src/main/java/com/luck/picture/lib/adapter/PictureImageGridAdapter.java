@@ -2,9 +2,11 @@ package com.luck.picture.lib.adapter;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -42,17 +44,18 @@ import java.util.List;
  * data：2016/12/30
  */
 public class PictureImageGridAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
     private final static int DURATION = 450;
     private Context context;
-    private boolean showCamera = true;
+    private boolean showCamera;
     private OnPhotoSelectChangedListener imageSelectChangedListener;
     private int maxSelectNum;
-    private List<LocalMedia> images = new ArrayList<LocalMedia>();
-    private List<LocalMedia> selectImages = new ArrayList<LocalMedia>();
+    private List<LocalMedia> images = new ArrayList<>();
+    private List<LocalMedia> selectImages = new ArrayList<>();
     private boolean enablePreview;
-    private int selectMode = PictureConfig.MULTIPLE;
-    private boolean enablePreviewVideo = false;
-    private boolean enablePreviewAudio = false;
+    private int selectMode;
+    private boolean enablePreviewVideo;
+    private boolean enablePreviewAudio;
     private boolean is_checked_num;
     private boolean enableVoice;
     private int overrideWidth, overrideHeight;
@@ -61,9 +64,6 @@ public class PictureImageGridAdapter extends RecyclerView.Adapter<RecyclerView.V
     private PictureSelectionConfig config;
     private int mimeType;
     private boolean zoomAnim;
-    /**
-     * 单选图片
-     */
     private boolean isGo;
 
     public PictureImageGridAdapter(Context context, PictureSelectionConfig config) {
@@ -96,11 +96,7 @@ public class PictureImageGridAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     public void bindSelectImages(List<LocalMedia> images) {
         // 这里重新构构造一个新集合，不然会产生已选集合一变，结果集合也会添加的问题
-        List<LocalMedia> selection = new ArrayList<>();
-        for (LocalMedia media : images) {
-            selection.add(media);
-        }
-        this.selectImages = selection;
+        this.selectImages = new ArrayList<>(images);
         subSelectPosition();
         if (imageSelectChangedListener != null) {
             imageSelectChangedListener.onChange(selectImages);
@@ -130,8 +126,9 @@ public class PictureImageGridAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
     }
 
+    @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == PictureConfig.TYPE_CAMERA) {
             View view = LayoutInflater.from(context).inflate(R.layout.picture_item_camera, parent, false);
             return new HeaderViewHolder(view);
@@ -141,8 +138,9 @@ public class PictureImageGridAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
     }
 
+    @SuppressLint("CheckResult")
     @Override
-    public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (getItemViewType(position) == PictureConfig.TYPE_CAMERA) {
             HeaderViewHolder headerHolder = (HeaderViewHolder) holder;
             headerHolder.headerView.setOnClickListener(new View.OnClickListener() {
@@ -171,10 +169,14 @@ public class PictureImageGridAdapter extends RecyclerView.Adapter<RecyclerView.V
             if (mimeType == PictureMimeType.ofAudio()) {
                 contentHolder.tv_duration.setVisibility(View.VISIBLE);
                 Drawable drawable = ContextCompat.getDrawable(context, R.drawable.picture_audio);
-                StringUtils.modifyTextViewDrawable(contentHolder.tv_duration, drawable, 0);
+                if (drawable != null) {
+                    StringUtils.modifyTextViewDrawable(contentHolder.tv_duration, drawable, 0);
+                }
             } else {
                 Drawable drawable = ContextCompat.getDrawable(context, R.drawable.video_icon);
-                StringUtils.modifyTextViewDrawable(contentHolder.tv_duration, drawable, 0);
+                if (drawable != null) {
+                    StringUtils.modifyTextViewDrawable(contentHolder.tv_duration, drawable, 0);
+                }
                 contentHolder.tv_duration.setVisibility(mediaMimeType == PictureConfig.TYPE_VIDEO
                         ? View.VISIBLE : View.GONE);
             }
@@ -213,6 +215,8 @@ public class PictureImageGridAdapter extends RecyclerView.Adapter<RecyclerView.V
                     }
                 });
             }
+
+            final int finalIndex = holder.getLayoutPosition();
             contentHolder.contentView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -221,7 +225,7 @@ public class PictureImageGridAdapter extends RecyclerView.Adapter<RecyclerView.V
                         ToastManage.s(context, PictureMimeType.s(context, mediaMimeType));
                         return;
                     }
-                    int index = showCamera ? position - 1 : position;
+                    int index = showCamera ? finalIndex - 1 : finalIndex;
                     boolean eqResult =
                             mediaMimeType == PictureConfig.TYPE_IMAGE && enablePreview
                                     || mediaMimeType == PictureConfig.TYPE_VIDEO && (enablePreviewVideo
@@ -248,10 +252,10 @@ public class PictureImageGridAdapter extends RecyclerView.Adapter<RecyclerView.V
         View headerView;
         TextView tv_title_camera;
 
-        public HeaderViewHolder(View itemView) {
+        HeaderViewHolder(View itemView) {
             super(itemView);
             headerView = itemView;
-            tv_title_camera = (TextView) itemView.findViewById(R.id.tv_title_camera);
+            tv_title_camera = itemView.findViewById(R.id.tv_title_camera);
             String title = mimeType == PictureMimeType.ofAudio() ?
                     context.getString(R.string.picture_tape)
                     : context.getString(R.string.picture_take_picture);
@@ -266,19 +270,19 @@ public class PictureImageGridAdapter extends RecyclerView.Adapter<RecyclerView.V
         View contentView;
         LinearLayout ll_check;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
             contentView = itemView;
-            iv_picture = (ImageView) itemView.findViewById(R.id.iv_picture);
-            check = (TextView) itemView.findViewById(R.id.check);
-            ll_check = (LinearLayout) itemView.findViewById(R.id.ll_check);
-            tv_duration = (TextView) itemView.findViewById(R.id.tv_duration);
-            tv_isGif = (TextView) itemView.findViewById(R.id.tv_isGif);
-            tv_long_chart = (TextView) itemView.findViewById(R.id.tv_long_chart);
+            iv_picture = itemView.findViewById(R.id.iv_picture);
+            check = itemView.findViewById(R.id.check);
+            ll_check = itemView.findViewById(R.id.ll_check);
+            tv_duration = itemView.findViewById(R.id.tv_duration);
+            tv_isGif = itemView.findViewById(R.id.tv_isGif);
+            tv_long_chart = itemView.findViewById(R.id.tv_long_chart);
         }
     }
 
-    public boolean isSelected(LocalMedia image) {
+    private boolean isSelected(LocalMedia image) {
         for (LocalMedia media : selectImages) {
             if (media.getPath().equals(image.getPath())) {
                 return true;
@@ -320,8 +324,8 @@ public class PictureImageGridAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
         if (selectImages.size() >= maxSelectNum && !isChecked) {
             boolean eqImg = pictureType.startsWith(PictureConfig.IMAGE);
-            String str = eqImg ? context.getString(R.string.picture_message_max_num, maxSelectNum)
-                    : context.getString(R.string.picture_message_video_max_num, maxSelectNum);
+            String str = eqImg ? context.getString(R.string.picture_message_max_num, String.valueOf(maxSelectNum))
+                    : context.getString(R.string.picture_message_video_max_num, String.valueOf(maxSelectNum));
             ToastManage.s(context, str);
             return;
         }
@@ -357,12 +361,13 @@ public class PictureImageGridAdapter extends RecyclerView.Adapter<RecyclerView.V
      * 单选模式
      */
     private void singleRadioMediaImage() {
-        if (selectImages != null
-                && selectImages.size() > 0) {
+        if (selectImages != null && selectImages.size() > 0) {
+            /**
+             * 单选图片
+             */
             isGo = true;
             LocalMedia media = selectImages.get(0);
-            notifyItemChanged(config.isCamera ? media.position :
-                    isGo ? media.position : media.position > 0 ? media.position - 1 : 0);
+            notifyItemChanged(config.isCamera ? media.position : isGo ? media.position : media.position > 0 ? media.position - 1 : 0);
             selectImages.clear();
         }
     }
@@ -373,7 +378,7 @@ public class PictureImageGridAdapter extends RecyclerView.Adapter<RecyclerView.V
     private void subSelectPosition() {
         if (is_checked_num) {
             int size = selectImages.size();
-            for (int index = 0, length = size; index < length; index++) {
+            for (int index = 0; index < size; index++) {
                 LocalMedia media = selectImages.get(index);
                 media.setNum(index + 1);
                 notifyItemChanged(media.position);
@@ -426,8 +431,7 @@ public class PictureImageGridAdapter extends RecyclerView.Adapter<RecyclerView.V
         void onPictureClick(LocalMedia media, int position);
     }
 
-    public void setOnPhotoSelectChangedListener(OnPhotoSelectChangedListener
-                                                        imageSelectChangedListener) {
+    public void setOnPhotoSelectChangedListener(OnPhotoSelectChangedListener imageSelectChangedListener) {
         this.imageSelectChangedListener = imageSelectChangedListener;
     }
 
