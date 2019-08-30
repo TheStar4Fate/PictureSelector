@@ -42,8 +42,6 @@ import java.util.List;
 
 import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -107,14 +105,11 @@ public class PictureBaseActivity extends FragmentActivity {
     private void initConfig() {
         outputCameraPath = config.outputCameraPath;
         // 是否开启白色状态栏
-        openWhiteStatusBar = AttrsUtils.getTypeValueBoolean
-                (this, R.attr.picture_statusFontColor);
+        openWhiteStatusBar = AttrsUtils.getTypeValueBoolean(this, R.attr.picture_statusFontColor);
         // 是否是0/9样式
-        numComplete = AttrsUtils.getTypeValueBoolean(this,
-                R.attr.picture_style_numComplete);
+        numComplete = AttrsUtils.getTypeValueBoolean(this, R.attr.picture_style_numComplete);
         // 是否开启数字勾选模式
-        config.checkNumMode = AttrsUtils.getTypeValueBoolean
-                (this, R.attr.picture_style_checkNumMode);
+        config.checkNumMode = AttrsUtils.getTypeValueBoolean(this, R.attr.picture_style_checkNumMode);
         // 标题栏背景色
         colorPrimary = AttrsUtils.getTypeValueColor(this, R.attr.colorPrimary);
         // 状态栏背景色
@@ -193,9 +188,7 @@ public class PictureBaseActivity extends FragmentActivity {
      */
     protected void dismissCompressDialog() {
         try {
-            if (!isFinishing()
-                    && compressDialog != null
-                    && compressDialog.isShowing()) {
+            if (!isFinishing() && compressDialog != null && compressDialog.isShowing()) {
                 compressDialog.dismiss();
             }
         } catch (Exception e) {
@@ -211,15 +204,15 @@ public class PictureBaseActivity extends FragmentActivity {
     protected void compressImage(final List<LocalMedia> result) {
         showCompressDialog();
         if (config.synOrAsy) {
+            //noinspection ResultOfMethodCallIgnored
             Flowable.just(result)
                     .observeOn(Schedulers.io())
                     .map(list -> {
-                        List<File> files =
-                                Luban.with(mContext)
-                                        .loadMediaData(list)
-                                        .setTargetDir(config.compressSavePath)
-                                        .ignoreBy(config.minimumCompressSize)
-                                        .get();
+                        List<File> files = Luban.with(mContext)
+                                .loadMediaData(list)
+                                .setTargetDir(config.compressSavePath)
+                                .ignoreBy(config.minimumCompressSize)
+                                .get();
                         if (files == null) {
                             files = new ArrayList<>();
                         }
@@ -267,7 +260,7 @@ public class PictureBaseActivity extends FragmentActivity {
                 // 如果是网络图片则不压缩
                 boolean http = PictureMimeType.isHttp(path);
                 boolean eqTrue = !TextUtils.isEmpty(path) && http;
-                image.setCompressed(eqTrue ? false : true);
+                image.setCompressed(!eqTrue);
                 image.setCompressPath(eqTrue ? "" : path);
             }
         }
@@ -353,18 +346,19 @@ public class PictureBaseActivity extends FragmentActivity {
      * @param file
      */
     protected void rotateImage(int degree, File file) {
-        if (degree > 0) {
-            // 针对相片有旋转问题的处理方式
-            try {
-                //获取缩略图显示到屏幕上
-                BitmapFactory.Options opts = new BitmapFactory.Options();
-                opts.inSampleSize = 2;
-                Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), opts);
-                Bitmap bmp = PictureFileUtils.rotaingImageView(degree, bitmap);
-                PictureFileUtils.saveBitmapFile(bmp, file);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        if (degree <= 0) {
+            return;
+        }
+        // 针对相片有旋转问题的处理方式
+        try {
+            //获取缩略图显示到屏幕上
+            BitmapFactory.Options opts = new BitmapFactory.Options();
+            opts.inSampleSize = 2;
+            Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), opts);
+            Bitmap bmp = PictureFileUtils.rotaingImageView(degree, bitmap);
+            PictureFileUtils.saveBitmapFile(bmp, file);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -412,6 +406,10 @@ public class PictureBaseActivity extends FragmentActivity {
         File imageFile = new File(path);
         File folderFile = imageFile.getParentFile();
 
+        if (folderFile == null) {
+            return null;
+        }
+
         for (LocalMediaFolder folder : imageFolders) {
             if (folder.getName().equals(folderFile.getName())) {
                 return folder;
@@ -432,11 +430,16 @@ public class PictureBaseActivity extends FragmentActivity {
      */
     protected void onResult(List<LocalMedia> images) {
         boolean androidQ = SdkVersionUtils.checkedAndroid_Q();
-        boolean isVideo = PictureMimeType.isVideo(images != null && images.size() > 0
-                ? images.get(0).getPictureType() : "");
+
+        if (images == null || images.size() <= 0) {
+            return;
+        }
+
+        boolean isVideo = PictureMimeType.isVideo(images.get(0).getPictureType());
         if (androidQ && !isVideo) {
             showCompressDialog();
         }
+
         RxUtils.io(new RxUtils.RxSimpleTask<List<LocalMedia>>() {
             @NonNull
             @Override
@@ -449,6 +452,7 @@ public class PictureBaseActivity extends FragmentActivity {
                         if (media == null || TextUtils.isEmpty(media.getPath())) {
                             continue;
                         }
+
                         if (media.isCompressed()) {
                             media.setPath(media.getCompressPath());
                         } else if (media.isCut()) {
@@ -457,8 +461,7 @@ public class PictureBaseActivity extends FragmentActivity {
                             String cachedDir = PictureFileUtils.getDiskCacheDir(getApplicationContext());
                             String imgType = PictureMimeType.getLastImgType(media.getPath());
                             String newPath = cachedDir + File.separator + System.currentTimeMillis() + imgType;
-                            Bitmap bitmapFromUri = BitmapUtils.getBitmapFromUri(getApplicationContext(),
-                                    Uri.parse(media.getPath()));
+                            Bitmap bitmapFromUri = BitmapUtils.getBitmapFromUri(getApplicationContext(), Uri.parse(media.getPath()));
                             BitmapUtils.saveBitmap(bitmapFromUri, newPath);
                             media.setPath(newPath);
                         }
@@ -524,7 +527,7 @@ public class PictureBaseActivity extends FragmentActivity {
                             MediaStore.Video.Media.EXTERNAL_CONTENT_URI
                             : MediaStore.Images.Media.EXTERNAL_CONTENT_URI, null,
                     selection, selectionArgs, ORDER_BY);
-            if (imageCursor.moveToFirst()) {
+            if (imageCursor != null && imageCursor.moveToFirst()) {
                 int id = imageCursor.getInt(eqVideo ?
                         imageCursor.getColumnIndex(MediaStore.Video.Media._ID)
                         : imageCursor.getColumnIndex(MediaStore.Images.Media._ID));
@@ -575,6 +578,10 @@ public class PictureBaseActivity extends FragmentActivity {
         if (data != null && config.mimeType == PictureMimeType.ofAudio()) {
             try {
                 Uri uri = data.getData();
+                if (uri == null) {
+                    return null;
+                }
+
                 final String audioPath;
                 if (compare_SDK_19) {
                     audioPath = uri.getPath();
@@ -599,14 +606,19 @@ public class PictureBaseActivity extends FragmentActivity {
     protected String getAudioFilePathFromUri(Uri uri) {
         String path = "";
         try {
-            Cursor cursor = getContentResolver()
-                    .query(uri, null, null, null, null);
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            if (cursor == null) {
+                return null;
+            }
+
             cursor.moveToFirst();
             int index = cursor.getColumnIndex(MediaStore.Audio.AudioColumns.DATA);
             path = cursor.getString(index);
+            cursor.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
         return path;
     }
+
 }

@@ -62,13 +62,11 @@ import io.reactivex.disposables.Disposable;
  * data：17/01/18
  */
 public class PictureExternalPreviewActivity extends PictureBaseActivity implements View.OnClickListener {
-    private ImageButton left_back;
     private TextView tv_title;
     private PreviewViewPager viewPager;
     private List<LocalMedia> images = new ArrayList<>();
     private int position = 0;
     private String directory_path;
-    private SimpleFragmentAdapter adapter;
     private LayoutInflater inflater;
     private RxPermissions rxPermissions;
     private loadDataThread loadDataThread;
@@ -78,9 +76,9 @@ public class PictureExternalPreviewActivity extends PictureBaseActivity implemen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.picture_activity_external_preview);
         inflater = LayoutInflater.from(this);
-        tv_title = (TextView) findViewById(R.id.picture_title);
-        left_back = (ImageButton) findViewById(R.id.left_back);
-        viewPager = (PreviewViewPager) findViewById(R.id.preview_pager);
+        tv_title = findViewById(R.id.picture_title);
+        ImageButton left_back = findViewById(R.id.left_back);
+        viewPager = findViewById(R.id.preview_pager);
         position = getIntent().getIntExtra(PictureConfig.EXTRA_POSITION, 0);
         directory_path = getIntent().getStringExtra(PictureConfig.DIRECTORY_PATH);
         images = (List<LocalMedia>) getIntent().getSerializableExtra(PictureConfig.EXTRA_PREVIEW_SELECT_LIST);
@@ -89,8 +87,8 @@ public class PictureExternalPreviewActivity extends PictureBaseActivity implemen
     }
 
     private void initViewPageAdapterData() {
-        tv_title.setText(position + 1 + "/" + images.size());
-        adapter = new SimpleFragmentAdapter();
+        tv_title.setText(String.format("%s/%s", position + 1, images.size()));
+        SimpleFragmentAdapter adapter = new SimpleFragmentAdapter();
         viewPager.setAdapter(adapter);
         viewPager.setCurrentItem(position);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -137,9 +135,9 @@ public class PictureExternalPreviewActivity extends PictureBaseActivity implemen
         public Object instantiateItem(ViewGroup container, int position) {
             View contentView = inflater.inflate(R.layout.picture_image_preview, container, false);
             // 常规图控件
-            final PhotoView imageView = (PhotoView) contentView.findViewById(R.id.preview_image);
+            final PhotoView imageView = contentView.findViewById(R.id.preview_image);
             // 长图控件
-            final SubsamplingScaleImageView longImg = (SubsamplingScaleImageView) contentView.findViewById(R.id.longImg);
+            final SubsamplingScaleImageView longImg = contentView.findViewById(R.id.longImg);
 
             LocalMedia media = images.get(position);
             if (media != null) {
@@ -291,10 +289,10 @@ public class PictureExternalPreviewActivity extends PictureBaseActivity implemen
                 ScreenUtils.getScreenWidth(PictureExternalPreviewActivity.this) * 3 / 4,
                 ScreenUtils.getScreenHeight(PictureExternalPreviewActivity.this) / 4,
                 R.layout.picture_wind_base_dialog_xml, R.style.Theme_dialog);
-        Button btn_cancel = (Button) dialog.findViewById(R.id.btn_cancel);
-        Button btn_commit = (Button) dialog.findViewById(R.id.btn_commit);
-        TextView tv_title = (TextView) dialog.findViewById(R.id.tv_title);
-        TextView tv_content = (TextView) dialog.findViewById(R.id.tv_content);
+        Button btn_cancel = dialog.findViewById(R.id.btn_cancel);
+        Button btn_commit = dialog.findViewById(R.id.btn_commit);
+        TextView tv_title = dialog.findViewById(R.id.tv_title);
+        TextView tv_content = dialog.findViewById(R.id.tv_content);
         tv_title.setText(getString(R.string.picture_prompt));
         tv_content.setText(getString(R.string.picture_prompt_content));
         btn_cancel.setOnClickListener(new View.OnClickListener() {
@@ -383,19 +381,14 @@ public class PictureExternalPreviewActivity extends PictureBaseActivity implemen
     }
 
 
-    private Handler handler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            switch (msg.what) {
-                case 200:
-                    String path = (String) msg.obj;
-                    ToastManage.s(mContext, getString(R.string.picture_save_success) + "\n" + path);
-                    dismissDialog();
-                    break;
-            }
+    private Handler handler = new Handler(message -> {
+        if (message.what == 200) {
+            String path = (String) message.obj;
+            ToastManage.s(mContext, getString(R.string.picture_save_success) + "\n" + path);
+            dismissDialog();
         }
-    };
+        return false;
+    });
 
     @Override
     public void onBackPressed() {
