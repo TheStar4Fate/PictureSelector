@@ -9,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
-import android.util.Log;
 
 import com.luck.picture.lib.config.PictureMimeType;
 import com.luck.picture.lib.entity.LocalMedia;
@@ -22,7 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Luban implements Handler.Callback {
-    private static final String TAG = "Luban";
+    //private static final String TAG = "Luban";
     private static final String DEFAULT_DISK_CACHE_DIR = "luban_disk_cache";
 
     private static final int MSG_COMPRESS_START = 1;
@@ -35,12 +34,12 @@ public class Luban implements Handler.Callback {
     private OnCompressListener mCompressListener;
     private int index = -1;
     private Handler mHandler;
-    private Context context;
+    //private Context context;
 
     private Luban(Builder builder) {
         this.mPaths = builder.mPaths;
         this.medias = builder.medias;
-        this.context = builder.context;
+        //this.context = builder.context;
         this.mTargetDir = builder.mTargetDir;
         this.mCompressListener = builder.mCompressListener;
         this.mLeastCompressSize = builder.mLeastCompressSize;
@@ -58,7 +57,11 @@ public class Luban implements Handler.Callback {
      */
     private File getImageCacheFile(Context context, String suffix) {
         if (TextUtils.isEmpty(mTargetDir)) {
-            mTargetDir = getImageCacheDir(context).getAbsolutePath();
+            File imageCacheDir = getImageCacheDir(context);
+            if (imageCacheDir == null) {
+                return null;
+            }
+            mTargetDir = imageCacheDir.getAbsolutePath();
         }
 
         String cacheBuilder = mTargetDir + "/" +
@@ -92,19 +95,17 @@ public class Luban implements Handler.Callback {
     @Nullable
     private File getImageCacheDir(Context context, String cacheName) {
         String dir = PictureFileUtils.getDiskCacheDir(context);
+        if (TextUtils.isEmpty(dir)) {
+            return null;
+        }
+
         File cacheDir = new File(dir);
-        if (cacheDir != null) {
-            File result = new File(cacheDir, cacheName);
-            if (!result.mkdirs() && (!result.exists() || !result.isDirectory())) {
-                // File wasn't able to create a directory, or the result exists but not a directory
-                return null;
-            }
-            return result;
+        File result = new File(cacheDir, cacheName);
+        if (!result.mkdirs() && (!result.exists() || !result.isDirectory())) {
+            // File wasn't able to create a directory, or the result exists but not a directory
+            return null;
         }
-        if (Log.isLoggable(TAG, Log.ERROR)) {
-            Log.e(TAG, "default disk cache dir is null");
-        }
-        return null;
+        return result;
     }
 
 
@@ -135,7 +136,7 @@ public class Luban implements Handler.Callback {
                                 LocalMedia media = medias.get(index);
                                 String path = result.getAbsolutePath();
                                 boolean eqHttp = PictureMimeType.isHttp(path);
-                                media.setCompressed(eqHttp ? false : true);
+                                media.setCompressed(!eqHttp);
                                 media.setCompressPath(eqHttp ? "" : result.getAbsolutePath());
                                 boolean isLast = index == medias.size() - 1;
                                 if (isLast) {
@@ -286,4 +287,5 @@ public class Luban implements Handler.Callback {
             return build().get(context);
         }
     }
+
 }

@@ -38,6 +38,7 @@ import java.util.List;
 
 import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
@@ -206,7 +207,7 @@ public class PictureBaseActivity extends FragmentActivity {
     protected void compressImage(final List<LocalMedia> result) {
         showCompressDialog();
         if (config.synOrAsy) {
-            Flowable.just(result)
+            Disposable subscribe = Flowable.just(result)
                     .observeOn(Schedulers.io())
                     .map(new Function<List<LocalMedia>, List<File>>() {
                         @Override
@@ -348,8 +349,8 @@ public class PictureBaseActivity extends FragmentActivity {
     /**
      * 判断拍照 图片是否旋转
      *
-     * @param degree
-     * @param file
+     * @param degree 旋转的角度
+     * @param file   待旋转的文件
      */
     protected void rotateImage(int degree, File file) {
         if (degree > 0) {
@@ -358,7 +359,7 @@ public class PictureBaseActivity extends FragmentActivity {
                 BitmapFactory.Options opts = new BitmapFactory.Options();//获取缩略图显示到屏幕上
                 opts.inSampleSize = 2;
                 Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath(), opts);
-                Bitmap bmp = PictureFileUtils.rotaingImageView(degree, bitmap);
+                Bitmap bmp = PictureFileUtils.rotateImageView(degree, bitmap);
                 PictureFileUtils.saveBitmapFile(bmp, file);
             } catch (Exception e) {
                 e.printStackTrace();

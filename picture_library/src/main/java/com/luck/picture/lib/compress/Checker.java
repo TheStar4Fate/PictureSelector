@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 class Checker {
+
     private static List<String> format = new ArrayList<>();
     private static final String JPG = "jpg";
     private static final String JPEG = "jpeg";
@@ -29,7 +30,7 @@ class Checker {
             return false;
         }
 
-        String suffix = path.substring(path.lastIndexOf(".") + 1, path.length());
+        String suffix = path.substring(path.lastIndexOf(".") + 1);
         return format.contains(suffix.toLowerCase());
     }
 
@@ -38,7 +39,7 @@ class Checker {
             return false;
         }
 
-        String suffix = path.substring(path.lastIndexOf("."), path.length()).toLowerCase();
+        String suffix = path.substring(path.lastIndexOf(".")).toLowerCase();
         return suffix.contains(JPG) || suffix.contains(JPEG);
     }
 
@@ -47,7 +48,7 @@ class Checker {
             return ".jpg";
         }
 
-        return path.substring(path.lastIndexOf("."), path.length());
+        return path.substring(path.lastIndexOf("."));
     }
 
     static boolean isNeedCompress(int leastCompressSize, String path) {
@@ -57,10 +58,9 @@ class Checker {
                 return false;
             }
 
-            if (source.length() <= (leastCompressSize << 10)) {
-                return false;
-            }
+            return source.length() > (leastCompressSize << 10);
         }
         return true;
     }
+
 }
