@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
@@ -34,17 +35,17 @@ import java.util.List;
  * data：2017/5/30
  */
 
-public class PhotoFragment extends Fragment implements View.OnClickListener,
-        RadioGroup.OnCheckedChangeListener, CompoundButton.OnCheckedChangeListener {
-    private final static String TAG = PhotoFragment.class.getSimpleName();
+public class PhotoFragment extends Fragment
+        implements View.OnClickListener,
+        RadioGroup.OnCheckedChangeListener,
+        CompoundButton.OnCheckedChangeListener {
+
     private View rootView;
     private List<LocalMedia> selectList = new ArrayList<>();
-    private RecyclerView recyclerView;
     private GridImageAdapter adapter;
     private int maxSelectNum = 9;
     private TextView tv_select_num;
-    private ImageView left_back, minus, plus;
-    private RadioGroup rgb_crop, rgb_style, rgb_photo_mode;
+    private RadioGroup rgb_crop;
     private int aspect_ratio_x, aspect_ratio_y;
     private CheckBox cb_voice, cb_choose_mode, cb_isCamera, cb_isGif,
             cb_preview_img, cb_preview_video, cb_crop, cb_compress,
@@ -55,7 +56,7 @@ public class PhotoFragment extends Fragment implements View.OnClickListener,
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if (rootView == null) {
             rootView = inflater.inflate(R.layout.activity_main, container, false);
         }
@@ -65,32 +66,32 @@ public class PhotoFragment extends Fragment implements View.OnClickListener,
 
     private void init() {
         themeId = R.style.picture_default_style;
-        minus = (ImageView) rootView.findViewById(R.id.minus);
-        plus = (ImageView) rootView.findViewById(R.id.plus);
-        tv_select_num = (TextView) rootView.findViewById(R.id.tv_select_num);
-        rgb_crop = (RadioGroup) rootView.findViewById(R.id.rgb_crop);
-        rgb_style = (RadioGroup) rootView.findViewById(R.id.rgb_style);
-        rgb_photo_mode = (RadioGroup) rootView.findViewById(R.id.rgb_photo_mode);
-        cb_voice = (CheckBox) rootView.findViewById(R.id.cb_voice);
-        cb_choose_mode = (CheckBox) rootView.findViewById(R.id.cb_choose_mode);
-        cb_isCamera = (CheckBox) rootView.findViewById(R.id.cb_isCamera);
-        cb_isGif = (CheckBox) rootView.findViewById(R.id.cb_isGif);
-        cb_preview_img = (CheckBox) rootView.findViewById(R.id.cb_preview_img);
-        cb_preview_video = (CheckBox) rootView.findViewById(R.id.cb_preview_video);
-        cb_crop = (CheckBox) rootView.findViewById(R.id.cb_crop);
-        cb_styleCrop = (CheckBox) rootView.findViewById(R.id.cb_styleCrop);
-        cb_compress = (CheckBox) rootView.findViewById(R.id.cb_compress);
-        cb_mode = (CheckBox) rootView.findViewById(R.id.cb_mode);
-        cb_showCropGrid = (CheckBox) rootView.findViewById(R.id.cb_showCropGrid);
-        cb_showCropFrame = (CheckBox) rootView.findViewById(R.id.cb_showCropFrame);
-        cb_preview_audio = (CheckBox) rootView.findViewById(R.id.cb_preview_audio);
-        cb_hide = (CheckBox) rootView.findViewById(R.id.cb_hide);
-        cb_crop_circular = (CheckBox) rootView.findViewById(R.id.cb_crop_circular);
+        ImageView minus = rootView.findViewById(R.id.minus);
+        ImageView plus = rootView.findViewById(R.id.plus);
+        tv_select_num = rootView.findViewById(R.id.tv_select_num);
+        rgb_crop = rootView.findViewById(R.id.rgb_crop);
+        RadioGroup rgb_style = rootView.findViewById(R.id.rgb_style);
+        RadioGroup rgb_photo_mode = rootView.findViewById(R.id.rgb_photo_mode);
+        cb_voice = rootView.findViewById(R.id.cb_voice);
+        cb_choose_mode = rootView.findViewById(R.id.cb_choose_mode);
+        cb_isCamera = rootView.findViewById(R.id.cb_isCamera);
+        cb_isGif = rootView.findViewById(R.id.cb_isGif);
+        cb_preview_img = rootView.findViewById(R.id.cb_preview_img);
+        cb_preview_video = rootView.findViewById(R.id.cb_preview_video);
+        cb_crop = rootView.findViewById(R.id.cb_crop);
+        cb_styleCrop = rootView.findViewById(R.id.cb_styleCrop);
+        cb_compress = rootView.findViewById(R.id.cb_compress);
+        cb_mode = rootView.findViewById(R.id.cb_mode);
+        cb_showCropGrid = rootView.findViewById(R.id.cb_showCropGrid);
+        cb_showCropFrame = rootView.findViewById(R.id.cb_showCropFrame);
+        cb_preview_audio = rootView.findViewById(R.id.cb_preview_audio);
+        cb_hide = rootView.findViewById(R.id.cb_hide);
+        cb_crop_circular = rootView.findViewById(R.id.cb_crop_circular);
         rgb_crop.setOnCheckedChangeListener(this);
         rgb_style.setOnCheckedChangeListener(this);
         rgb_photo_mode.setOnCheckedChangeListener(this);
-        recyclerView = (RecyclerView) rootView.findViewById(R.id.recycler);
-        left_back = (ImageView) rootView.findViewById(R.id.left_back);
+        RecyclerView recyclerView = rootView.findViewById(R.id.recycler);
+        ImageView left_back = rootView.findViewById(R.id.left_back);
         left_back.setOnClickListener(this);
         minus.setOnClickListener(this);
         plus.setOnClickListener(this);
@@ -103,26 +104,23 @@ public class PhotoFragment extends Fragment implements View.OnClickListener,
         adapter.setList(selectList);
         adapter.setSelectMax(maxSelectNum);
         recyclerView.setAdapter(adapter);
-        adapter.setOnItemClickListener(new GridImageAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position, View v) {
-                LocalMedia media = selectList.get(position);
-                String pictureType = media.getPictureType();
-                int mediaType = PictureMimeType.pictureToVideo(pictureType);
-                switch (mediaType) {
-                    case 1:
-                        // 预览图片
-                        PictureSelector.create(PhotoFragment.this).themeStyle(themeId).openExternalPreview(position, selectList);
-                        break;
-                    case 2:
-                        // 预览视频
-                        PictureSelector.create(PhotoFragment.this).externalPictureVideo(media.getPath());
-                        break;
-                    case 3:
-                        // 预览音频
-                        PictureSelector.create(PhotoFragment.this).externalPictureAudio(media.getPath());
-                        break;
-                }
+        adapter.setOnItemClickListener((position, v) -> {
+            LocalMedia media = selectList.get(position);
+            String pictureType = media.getPictureType();
+            int mediaType = PictureMimeType.pictureToVideo(pictureType);
+            switch (mediaType) {
+                case 1:
+                    // 预览图片
+                    PictureSelector.create(PhotoFragment.this).themeStyle(themeId).openExternalPreview(position, selectList);
+                    break;
+                case 2:
+                    // 预览视频
+                    PictureSelector.create(PhotoFragment.this).externalPictureVideo(media.getPath());
+                    break;
+                case 3:
+                    // 预览音频
+                    PictureSelector.create(PhotoFragment.this).externalPictureAudio(media.getPath());
+                    break;
             }
         });
     }
@@ -148,7 +146,7 @@ public class PhotoFragment extends Fragment implements View.OnClickListener,
                         .glideOverride(160, 160)
                         .previewEggs(true)
                         .withAspectRatio(aspect_ratio_x, aspect_ratio_y)
-                        .hideBottomControls(cb_hide.isChecked() ? false : true)
+                        .hideBottomControls(!cb_hide.isChecked())
                         .isGif(cb_isGif.isChecked())
                         .freeStyleCropEnabled(cb_styleCrop.isChecked())
                         .circleDimmedLayer(cb_crop_circular.isChecked())
@@ -173,7 +171,7 @@ public class PhotoFragment extends Fragment implements View.OnClickListener,
                         .compress(cb_compress.isChecked())
                         .glideOverride(160, 160)
                         .withAspectRatio(aspect_ratio_x, aspect_ratio_y)
-                        .hideBottomControls(cb_hide.isChecked() ? false : true)
+                        .hideBottomControls(!cb_hide.isChecked())
                         .isGif(cb_isGif.isChecked())
                         .freeStyleCropEnabled(cb_styleCrop.isChecked())
                         .circleDimmedLayer(cb_crop_circular.isChecked())
@@ -190,13 +188,10 @@ public class PhotoFragment extends Fragment implements View.OnClickListener,
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
-            switch (requestCode) {
-                case PictureConfig.CHOOSE_REQUEST:
-                    // 图片选择
-                    selectList = PictureSelector.obtainMultipleResult(data);
-                    adapter.setList(selectList);
-                    adapter.notifyDataSetChanged();
-                    break;
+            if (requestCode == PictureConfig.CHOOSE_REQUEST) {// 图片选择
+                selectList = PictureSelector.obtainMultipleResult(data);
+                adapter.setList(selectList);
+                adapter.notifyDataSetChanged();
             }
         }
     }
@@ -205,18 +200,20 @@ public class PhotoFragment extends Fragment implements View.OnClickListener,
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.left_back:
-                getActivity().finish();
+                if (getActivity() != null) {
+                    getActivity().finish();
+                }
                 break;
             case R.id.minus:
                 if (maxSelectNum > 1) {
                     maxSelectNum--;
                 }
-                tv_select_num.setText(maxSelectNum + "");
+                tv_select_num.setText(String.format("%s", maxSelectNum));
                 adapter.setSelectMax(maxSelectNum);
                 break;
             case R.id.plus:
                 maxSelectNum++;
-                tv_select_num.setText(maxSelectNum + "");
+                tv_select_num.setText(String.format("%s", maxSelectNum));
                 adapter.setSelectMax(maxSelectNum);
                 break;
         }
@@ -335,4 +332,5 @@ public class PhotoFragment extends Fragment implements View.OnClickListener,
                 break;
         }
     }
+
 }

@@ -1,6 +1,7 @@
 package com.luck.pictureselector;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -15,6 +16,7 @@ import android.view.ViewGroup;
  */
 
 public class FullyGridLayoutManager extends GridLayoutManager {
+
     public FullyGridLayoutManager(Context context, int spanCount) {
         super(context, spanCount);
     }
@@ -26,7 +28,7 @@ public class FullyGridLayoutManager extends GridLayoutManager {
     private int[] mMeasuredDimension = new int[2];
 
     @Override
-    public void onMeasure(RecyclerView.Recycler recycler, RecyclerView.State state, int widthSpec, int heightSpec) {
+    public void onMeasure(@NonNull RecyclerView.Recycler recycler, @NonNull RecyclerView.State state, int widthSpec, int heightSpec) {
         final int widthMode = View.MeasureSpec.getMode(widthSpec);
         final int heightMode = View.MeasureSpec.getMode(heightSpec);
         final int widthSize = View.MeasureSpec.getSize(widthSpec);
@@ -76,7 +78,7 @@ public class FullyGridLayoutManager extends GridLayoutManager {
         setMeasuredDimension(width, height);
     }
 
-    final RecyclerView.State mState = new RecyclerView.State();
+    private final RecyclerView.State mState = new RecyclerView.State();
 
     private void measureScrapChild(RecyclerView.Recycler recycler, int position, int widthSpec,
                                    int heightSpec, int[] measuredDimension) {
@@ -84,17 +86,13 @@ public class FullyGridLayoutManager extends GridLayoutManager {
         if (position < itemCount) {
             try {
                 View view = recycler.getViewForPosition(0);
-                if (view != null) {
-                    RecyclerView.LayoutParams p = (RecyclerView.LayoutParams) view.getLayoutParams();
-                    int childWidthSpec = ViewGroup.getChildMeasureSpec(widthSpec,
-                            getPaddingLeft() + getPaddingRight(), p.width);
-                    int childHeightSpec = ViewGroup.getChildMeasureSpec(heightSpec,
-                            getPaddingTop() + getPaddingBottom(), p.height);
-                    view.measure(childWidthSpec, childHeightSpec);
-                    measuredDimension[0] = view.getMeasuredWidth() + p.leftMargin + p.rightMargin;
-                    measuredDimension[1] = view.getMeasuredHeight() + p.bottomMargin + p.topMargin;
-                    recycler.recycleView(view);
-                }
+                RecyclerView.LayoutParams p = (RecyclerView.LayoutParams) view.getLayoutParams();
+                int childWidthSpec = ViewGroup.getChildMeasureSpec(widthSpec, getPaddingLeft() + getPaddingRight(), p.width);
+                int childHeightSpec = ViewGroup.getChildMeasureSpec(heightSpec, getPaddingTop() + getPaddingBottom(), p.height);
+                view.measure(childWidthSpec, childHeightSpec);
+                measuredDimension[0] = view.getMeasuredWidth() + p.leftMargin + p.rightMargin;
+                measuredDimension[1] = view.getMeasuredHeight() + p.bottomMargin + p.topMargin;
+                recycler.recycleView(view);
             } catch (Exception e) {
                 e.printStackTrace();
             }

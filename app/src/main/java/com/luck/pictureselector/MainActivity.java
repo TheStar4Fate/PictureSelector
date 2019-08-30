@@ -3,7 +3,6 @@ package com.luck.pictureselector;
 import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.IdRes;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -25,28 +24,30 @@ import com.luck.picture.lib.permissions.RxPermissions;
 import com.luck.picture.lib.tools.PictureFileUtils;
 import com.luck.pictureselector.adapter.GridImageAdapter;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener,
-        RadioGroup.OnCheckedChangeListener, CompoundButton.OnCheckedChangeListener {
+public class MainActivity extends AppCompatActivity
+        implements View.OnClickListener,
+        RadioGroup.OnCheckedChangeListener,
+        CompoundButton.OnCheckedChangeListener {
+
     private final static String TAG = MainActivity.class.getSimpleName();
+
     private List<LocalMedia> selectList = new ArrayList<>();
-    private RecyclerView recyclerView;
     private GridImageAdapter adapter;
     private int maxSelectNum = 9;
     private TextView tv_select_num;
-    private ImageView left_back, minus, plus;
-    private RadioGroup rgb_crop, rgb_style, rgb_photo_mode;
+    private RadioGroup rgb_crop;
     private int aspect_ratio_x, aspect_ratio_y;
     private CheckBox cb_voice, cb_choose_mode, cb_isCamera, cb_isGif,
             cb_preview_img, cb_preview_video, cb_crop, cb_compress,
             cb_mode, cb_hide, cb_crop_circular, cb_styleCrop, cb_showCropGrid,
             cb_showCropFrame, cb_preview_audio;
+
     private int themeId;
     private int chooseMode = PictureMimeType.ofAll();
 
@@ -55,12 +56,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         themeId = R.style.picture_default_style;
-        minus = findViewById(R.id.minus);
-        plus = findViewById(R.id.plus);
+        ImageView minus = findViewById(R.id.minus);
+        ImageView plus = findViewById(R.id.plus);
         tv_select_num = findViewById(R.id.tv_select_num);
         rgb_crop = findViewById(R.id.rgb_crop);
-        rgb_style = findViewById(R.id.rgb_style);
-        rgb_photo_mode = findViewById(R.id.rgb_photo_mode);
+        RadioGroup rgb_style = findViewById(R.id.rgb_style);
+        RadioGroup rgb_photo_mode = findViewById(R.id.rgb_photo_mode);
         cb_voice = findViewById(R.id.cb_voice);
         cb_choose_mode = findViewById(R.id.cb_choose_mode);
         cb_isCamera = findViewById(R.id.cb_isCamera);
@@ -79,8 +80,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         rgb_crop.setOnCheckedChangeListener(this);
         rgb_style.setOnCheckedChangeListener(this);
         rgb_photo_mode.setOnCheckedChangeListener(this);
-        recyclerView = findViewById(R.id.recycler);
-        left_back = findViewById(R.id.left_back);
+        RecyclerView recyclerView = findViewById(R.id.recycler);
+        ImageView left_back = findViewById(R.id.left_back);
         left_back.setOnClickListener(this);
         minus.setOnClickListener(this);
         plus.setOnClickListener(this);
@@ -93,28 +94,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         adapter.setList(selectList);
         adapter.setSelectMax(maxSelectNum);
         recyclerView.setAdapter(adapter);
-        adapter.setOnItemClickListener(new GridImageAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(int position, View v) {
-                if (selectList.size() > 0) {
-                    LocalMedia media = selectList.get(position);
-                    String pictureType = media.getPictureType();
-                    int mediaType = PictureMimeType.pictureToVideo(pictureType);
-                    switch (mediaType) {
-                        case 1:
-                            // 预览图片 可自定长按保存路径
-                            //PictureSelector.create(MainActivity.this).themeStyle(themeId).externalPicturePreview(position, "/custom_file", selectList);
-                            PictureSelector.create(MainActivity.this).themeStyle(themeId).openExternalPreview(position, selectList);
-                            break;
-                        case 2:
-                            // 预览视频
-                            PictureSelector.create(MainActivity.this).externalPictureVideo(media.getPath());
-                            break;
-                        case 3:
-                            // 预览音频
-                            PictureSelector.create(MainActivity.this).externalPictureAudio(media.getPath());
-                            break;
-                    }
+        adapter.setOnItemClickListener((position, v) -> {
+            if (selectList.size() > 0) {
+                LocalMedia media = selectList.get(position);
+                String pictureType = media.getPictureType();
+                int mediaType = PictureMimeType.pictureToVideo(pictureType);
+                switch (mediaType) {
+                    case 1:
+                        // 预览图片 可自定长按保存路径
+                        //PictureSelector.create(MainActivity.this).themeStyle(themeId).externalPicturePreview(position, "/custom_file", selectList);
+                        PictureSelector.create(MainActivity.this).themeStyle(themeId).openExternalPreview(position, selectList);
+                        break;
+                    case 2:
+                        // 预览视频
+                        PictureSelector.create(MainActivity.this).externalPictureVideo(media.getPath());
+                        break;
+                    case 3:
+                        // 预览音频
+                        PictureSelector.create(MainActivity.this).externalPictureAudio(media.getPath());
+                        break;
                 }
             }
         });
@@ -131,8 +129,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (aBoolean) {
                     PictureFileUtils.deleteCacheDirFile(MainActivity.this);
                 } else {
-                    Toast.makeText(MainActivity.this,
-                            getString(R.string.picture_jurisdiction), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, getString(R.string.picture_jurisdiction), Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -240,23 +237,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            switch (requestCode) {
-                case PictureConfig.CHOOSE_REQUEST:
-                    // 图片选择结果回调
-                    selectList = PictureSelector.obtainMultipleResult(data);
-                    // 例如 LocalMedia 里面返回三种path
-                    // 1.media.getPath(); 为原图path
-                    // 2.media.getCutPath();为裁剪后path，需判断media.isCut();是否为true
-                    // 3.media.getCompressPath();为压缩后path，需判断media.isCompressed();是否为true
-                    // 如果裁剪并压缩了，已取压缩路径为准，因为是先裁剪后压缩的
-                    for (LocalMedia media : selectList) {
-                        Log.i(TAG, "压缩---->" + media.getCompressPath());
-                        Log.i(TAG, "原图---->" + media.getPath());
-                        Log.i(TAG, "裁剪---->" + media.getCutPath());
-                    }
-                    adapter.setList(selectList);
-                    adapter.notifyDataSetChanged();
-                    break;
+            if (requestCode == PictureConfig.CHOOSE_REQUEST) {// 图片选择结果回调
+                selectList = PictureSelector.obtainMultipleResult(data);
+                // 例如 LocalMedia 里面返回三种path
+                // 1.media.getPath(); 为原图path
+                // 2.media.getCutPath();为裁剪后path，需判断media.isCut();是否为true
+                // 3.media.getCompressPath();为压缩后path，需判断media.isCompressed();是否为true
+                // 如果裁剪并压缩了，已取压缩路径为准，因为是先裁剪后压缩的
+                for (LocalMedia media : selectList) {
+                    Log.i(TAG, "压缩---->" + media.getCompressPath());
+                    Log.i(TAG, "原图---->" + media.getPath());
+                    Log.i(TAG, "裁剪---->" + media.getCutPath());
+                }
+                adapter.setList(selectList);
+                adapter.notifyDataSetChanged();
             }
         }
     }
@@ -271,12 +265,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if (maxSelectNum > 1) {
                     maxSelectNum--;
                 }
-                tv_select_num.setText(maxSelectNum + "");
+                tv_select_num.setText(String.format("%s", maxSelectNum));
                 adapter.setSelectMax(maxSelectNum);
                 break;
             case R.id.plus:
                 maxSelectNum++;
-                tv_select_num.setText(maxSelectNum + "");
+                tv_select_num.setText(String.format("%s", maxSelectNum));
                 adapter.setSelectMax(maxSelectNum);
                 break;
         }
@@ -401,17 +395,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    /**
-     * 自定义压缩存储地址
-     *
-     * @return
-     */
-    private String getPath() {
-        String path = Environment.getExternalStorageDirectory() + "/Luban/image/";
-        File file = new File(path);
-        if (file.mkdirs()) {
-            return path;
-        }
-        return path;
-    }
+//    /**
+//     * 自定义压缩存储地址
+//     *
+//     * @return
+//     */
+//    private String getPath() {
+//        String path = Environment.getExternalStorageDirectory() + "/Luban/image/";
+//        File file = new File(path);
+//        if (file.mkdirs()) {
+//            return path;
+//        }
+//        return path;
+//    }
+
 }
