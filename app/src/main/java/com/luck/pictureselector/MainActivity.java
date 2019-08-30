@@ -55,32 +55,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         themeId = R.style.picture_default_style;
-        minus = (ImageView) findViewById(R.id.minus);
-        plus = (ImageView) findViewById(R.id.plus);
-        tv_select_num = (TextView) findViewById(R.id.tv_select_num);
-        rgb_crop = (RadioGroup) findViewById(R.id.rgb_crop);
-        rgb_style = (RadioGroup) findViewById(R.id.rgb_style);
-        rgb_photo_mode = (RadioGroup) findViewById(R.id.rgb_photo_mode);
-        cb_voice = (CheckBox) findViewById(R.id.cb_voice);
-        cb_choose_mode = (CheckBox) findViewById(R.id.cb_choose_mode);
-        cb_isCamera = (CheckBox) findViewById(R.id.cb_isCamera);
-        cb_isGif = (CheckBox) findViewById(R.id.cb_isGif);
-        cb_preview_img = (CheckBox) findViewById(R.id.cb_preview_img);
-        cb_preview_video = (CheckBox) findViewById(R.id.cb_preview_video);
-        cb_crop = (CheckBox) findViewById(R.id.cb_crop);
-        cb_styleCrop = (CheckBox) findViewById(R.id.cb_styleCrop);
-        cb_compress = (CheckBox) findViewById(R.id.cb_compress);
-        cb_mode = (CheckBox) findViewById(R.id.cb_mode);
-        cb_showCropGrid = (CheckBox) findViewById(R.id.cb_showCropGrid);
-        cb_showCropFrame = (CheckBox) findViewById(R.id.cb_showCropFrame);
-        cb_preview_audio = (CheckBox) findViewById(R.id.cb_preview_audio);
-        cb_hide = (CheckBox) findViewById(R.id.cb_hide);
-        cb_crop_circular = (CheckBox) findViewById(R.id.cb_crop_circular);
+        minus = findViewById(R.id.minus);
+        plus = findViewById(R.id.plus);
+        tv_select_num = findViewById(R.id.tv_select_num);
+        rgb_crop = findViewById(R.id.rgb_crop);
+        rgb_style = findViewById(R.id.rgb_style);
+        rgb_photo_mode = findViewById(R.id.rgb_photo_mode);
+        cb_voice = findViewById(R.id.cb_voice);
+        cb_choose_mode = findViewById(R.id.cb_choose_mode);
+        cb_isCamera = findViewById(R.id.cb_isCamera);
+        cb_isGif = findViewById(R.id.cb_isGif);
+        cb_preview_img = findViewById(R.id.cb_preview_img);
+        cb_preview_video = findViewById(R.id.cb_preview_video);
+        cb_crop = findViewById(R.id.cb_crop);
+        cb_styleCrop = findViewById(R.id.cb_styleCrop);
+        cb_compress = findViewById(R.id.cb_compress);
+        cb_mode = findViewById(R.id.cb_mode);
+        cb_showCropGrid = findViewById(R.id.cb_showCropGrid);
+        cb_showCropFrame = findViewById(R.id.cb_showCropFrame);
+        cb_preview_audio = findViewById(R.id.cb_preview_audio);
+        cb_hide = findViewById(R.id.cb_hide);
+        cb_crop_circular = findViewById(R.id.cb_crop_circular);
         rgb_crop.setOnCheckedChangeListener(this);
         rgb_style.setOnCheckedChangeListener(this);
         rgb_photo_mode.setOnCheckedChangeListener(this);
-        recyclerView = (RecyclerView) findViewById(R.id.recycler);
-        left_back = (ImageView) findViewById(R.id.left_back);
+        recyclerView = findViewById(R.id.recycler);
+        left_back = findViewById(R.id.left_back);
         left_back.setOnClickListener(this);
         minus.setOnClickListener(this);
         plus.setOnClickListener(this);
@@ -213,7 +213,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .compress(cb_compress.isChecked())// 是否压缩
                         .glideOverride(160, 160)// glide 加载宽高，越小图片列表越流畅，但会影响列表图片浏览的清晰度
                         .withAspectRatio(aspect_ratio_x, aspect_ratio_y)// 裁剪比例 如16:9 3:2 3:4 1:1 可自定义
-                        .hideBottomControls(cb_hide.isChecked() ? false : true)// 是否显示uCrop工具栏，默认不显示
+                        .hideBottomControls(!cb_hide.isChecked())// 是否显示uCrop工具栏，默认不显示
                         .isGif(cb_isGif.isChecked())// 是否显示gif图片
                         .freeStyleCropEnabled(cb_styleCrop.isChecked())// 裁剪框是否可拖拽
                         .circleDimmedLayer(cb_crop_circular.isChecked())// 是否圆形裁剪
@@ -250,7 +250,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     // 3.media.getCompressPath();为压缩后path，需判断media.isCompressed();是否为true
                     // 如果裁剪并压缩了，已取压缩路径为准，因为是先裁剪后压缩的
                     for (LocalMedia media : selectList) {
-                        Log.i("图片-----》", media.getPath());
+                        Log.i(TAG, "压缩---->" + media.getCompressPath());
+                        Log.i(TAG, "原图---->" + media.getPath());
+                        Log.i(TAG, "裁剪---->" + media.getCutPath());
                     }
                     adapter.setList(selectList);
                     adapter.notifyDataSetChanged();

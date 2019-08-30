@@ -20,7 +20,6 @@
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
  * The views and conclusions contained in the software and documentation are those of the
  * authors and should not be interpreted as representing official policies, either expressed
  * or implied, of Google, Inc.
@@ -404,10 +403,12 @@ public class ImageHeaderParser {
         try {
             ExifInterface newExif = new ExifInterface(imageOutputPath);
             String value;
-            for (String attribute : attributes) {
-                value = originalExif.getAttribute(attribute);
-                if (!TextUtils.isEmpty(value)) {
-                    newExif.setAttribute(attribute, value);
+            if (originalExif != null) {
+                for (String attribute : attributes) {
+                    value = originalExif.getAttribute(attribute);
+                    if (!TextUtils.isEmpty(value)) {
+                        newExif.setAttribute(attribute, value);
+                    }
                 }
             }
             newExif.setAttribute(ExifInterface.TAG_IMAGE_WIDTH, String.valueOf(width));
@@ -422,4 +423,3 @@ public class ImageHeaderParser {
     }
 
 }
-

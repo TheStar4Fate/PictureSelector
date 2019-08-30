@@ -51,7 +51,8 @@ public class TransformImageView extends ImageView {
 
     private int mMaxBitmapSize = 0;
 
-    private String mImageInputPath, mImageOutputPath;
+    private Uri mImageInputUri;
+    private String mImageOutputPath;
     private ExifInfo mExifInfo;
 
     /**
@@ -117,8 +118,8 @@ public class TransformImageView extends ImageView {
         setImageDrawable(new FastBitmapDrawable(bitmap));
     }
 
-    public String getImageInputPath() {
-        return mImageInputPath;
+    public Uri getImageInputUri() {
+        return mImageInputUri;
     }
 
     public String getImageOutputPath() {
@@ -138,27 +139,30 @@ public class TransformImageView extends ImageView {
     public void setImageUri(@NonNull Uri imageUri, @Nullable Uri outputUri) throws Exception {
         int maxBitmapSize = getMaxBitmapSize();
 
-        BitmapLoadUtils.decodeBitmapInBackground(getContext(), imageUri, outputUri, maxBitmapSize, maxBitmapSize,
-                new BitmapLoadCallback() {
+        BitmapLoadUtils.decodeBitmapInBackground(getContext(), imageUri, outputUri, maxBitmapSize, maxBitmapSize, new BitmapLoadCallback() {
 
-                    @Override
-                    public void onBitmapLoaded(@NonNull Bitmap bitmap, @NonNull ExifInfo exifInfo, @NonNull String imageInputPath, @Nullable String imageOutputPath) {
-                        mImageInputPath = imageInputPath;
-                        mImageOutputPath = imageOutputPath;
-                        mExifInfo = exifInfo;
+            @Override
+            public void onBitmapLoaded(@NonNull Bitmap bitmap, @NonNull ExifInfo exifInfo, @NonNull Uri imageInputUri, @Nullable Uri imageOutputUri) {
+                mImageInputUri = imageInputUri;
+                if (imageOutputUri == null) {
+                    mImageOutputPath = "";
+                } else {
+                    mImageOutputPath = imageOutputUri.getPath();
+                }
+                mExifInfo = exifInfo;
 
-                        mBitmapDecoded = true;
-                        setImageBitmap(bitmap);
-                    }
+                mBitmapDecoded = true;
+                setImageBitmap(bitmap);
+            }
 
-                    @Override
-                    public void onFailure(@NonNull Exception bitmapWorkerException) {
-                        Log.e(TAG, "onFailure: setImageUri", bitmapWorkerException);
-                        if (mTransformImageListener != null) {
-                            mTransformImageListener.onLoadFailure(bitmapWorkerException);
-                        }
-                    }
-                });
+            @Override
+            public void onFailure(@NonNull Exception bitmapWorkerException) {
+                Log.e(TAG, "onFailure: setImageUri", bitmapWorkerException);
+                if (mTransformImageListener != null) {
+                    mTransformImageListener.onLoadFailure(bitmapWorkerException);
+                }
+            }
+        });
     }
 
     /**

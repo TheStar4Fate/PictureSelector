@@ -1,12 +1,12 @@
-# PictureSelector 2.0 
-   一款针对android平台下的图片选择器，支持从相册或拍照选择图片或视频、音频，支持动态权限获取、裁剪(单图or多图裁剪)、压缩、主题自定义配置等功能、适配android 6.0+系统的开源图片选择框架。<br>  
+# PictureSelector 2.0
+   一款针对android平台下的图片选择器，支持从相册或拍照选择图片或视频、音频，支持动态权限获取、裁剪(单图or多图裁剪)、压缩、主题自定义配置等功能、适配android 6.0+系统的开源图片选择框架。<br>
   
   <br>项目会一直维护(有bug修复完成，一般周末会更新(不好意思，最近比较忙有时间会解决~有问题先提issue))，有bug请描述清楚，并请Issues会第一时间修复，个人QQ 893855882@qq.com  希望用得着的朋友点个star。 <br>
- Android开发交流 群一 619458861 (已满) <br> 
- Android开发交流 群二 679824206 (已满) <br> 
-   
-  [我的博客地址](http://blog.csdn.net/luck_mw) 
-  
+ Android开发交流 群一 619458861 (已满) <br>
+ Android开发交流 群二 679824206 <br>
+
+  [我的博客地址](http://blog.csdn.net/luck_mw)
+
 [![](https://jitpack.io/v/LuckSiege/PictureSelector.svg)](https://jitpack.io/#LuckSiege/PictureSelector)
 [![PRs Welcome](https://img.shields.io/badge/PRs-Welcome-brightgreen.svg)](https://github.com/LuckSiege)
 [![CSDN](https://img.shields.io/twitter/url/http/blog.csdn.net/luck_mw.svg?style=social)](http://blog.csdn.net/luck_mw)
@@ -38,7 +38,7 @@
 * 6.支持裁剪比例设置，如常用的 1:1、3：4、3:2、16:9 默认为图片大小
 * 7.支持视频预览
 * 8.支持gif图片
-* 9.支持.webp格式图片 
+* 9.支持.webp格式图片
 * 10.支持一些常用场景设置：如:是否裁剪、是否预览图片、是否显示相机等
 * 11.新增自定义主题设置
 * 12.新增图片勾选样式设置
@@ -46,7 +46,7 @@
 * 14.新增图片压缩处理
 * 15.新增录视频最大时间设置
 * 16.新增视频清晰度设置
-* 17.新增QQ选择风格，带数字效果 
+* 17.新增QQ选择风格，带数字效果
 * 18.新增自定义 文字颜色 背景色让风格和项目更搭配
 * 19.新增多图裁剪功能
 * 20.新增LuBan多图压缩
@@ -63,7 +63,7 @@
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.CAMERA" />
-    
+
 ```
 
 
@@ -73,7 +73,7 @@
 
 ```
 dependencies {
-    implementation 'com.github.LuckSiege.PictureSelector:picture_library:v2.2.3'
+    implementation 'com.github.LuckSiege.PictureSelector:picture_library:v2.2.4'
 }
 
 ```
@@ -106,7 +106,7 @@ step 2.
 <dependency>
       <groupId>com.github.LuckSiege.PictureSelector</groupId>
       <artifactId>picture_library</artifactId>
-      <version>v2.2.3</version> 
+      <version>v2.2.4</version>
 </dependency>
 
 ```
@@ -115,23 +115,23 @@ step 2.
 ```
  重要：PictureSelector.create()；调用此方法时，在activity中传activity.this，在fragment中请传fragment.this,
  影响回调到哪个地方的onActivityResult()。
- 
+
  问题一：
  rxjava冲突：在app build.gradle下添加
  packagingOptions {
    exclude 'META-INF/rxjava.properties'
  }  
- 
+
  问题二：
- java.lang.NullPointerException: 
- Attempt to invoke virtual method 'android.content.res.XmlResourceParser 
+ java.lang.NullPointerException:
+ Attempt to invoke virtual method 'android.content.res.XmlResourceParser
  android.content.pm.ProviderInfo.loadXmlMetaData(android.content.pm.PackageManager, java.lang.String)'
  on a null object reference
- 
+
  * 注意 从v2.1.3版本中，将不需要配制以下内容
- 
+
  application下添加如下节点:
- 
+
  <provider
       android:name="android.support.v4.content.FileProvider"
       android:authorities="${applicationId}.provider"
@@ -154,7 +154,7 @@ if (savedInstanceState == null) {
       		getSupportFragmentManager().beginTransaction().add(R.id.tab_content, fragment,
                     PictureConfig.FC_TAG).show(fragment)
                     .commit();
-     } else { 
+     } else {
       	fragment = (PhotoFragment) getSupportFragmentManager()
           .findFragmentByTag(PictureConfig.FC_TAG);
 }
@@ -202,14 +202,14 @@ Glide.with(context).load(url).apply(options).into(imageView);
  	.selectionMedia()// 是否传入已选图片 List<LocalMedia> list
  	.previewEggs()// 预览图片时 是否增强左右滑动图片体验(图片滑动一半即可看到上一张是否选中) true or false
  	.cropCompressQuality()// 裁剪压缩质量 默认90 int
- 	.minimumCompressSize(100)// 小于100kb的图片不压缩 
+ 	.minimumCompressSize(100)// 小于100kb的图片不压缩
  	.synOrAsy(true)//同步true或异步false 压缩 默认同步
- 	.cropWH()// 裁剪宽高比，设置如果大于图片本身宽高则无效 int 
+ 	.cropWH()// 裁剪宽高比，设置如果大于图片本身宽高则无效 int
  	.rotateEnabled() // 裁剪是否可旋转图片 true or false
  	.scaleEnabled()// 裁剪是否可放大缩小图片 true or false
  	.videoQuality()// 视频录制质量 0 or 1 int
-	.videoMaxSecond(15)// 显示多少秒以内的视频or音频也可适用 int 
-        .videoMinSecond(10)// 显示多少秒以内的视频or音频也可适用 int 
+	.videoMaxSecond(15)// 显示多少秒以内的视频or音频也可适用 int
+        .videoMinSecond(10)// 显示多少秒以内的视频or音频也可适用 int
 	.recordVideoSecond()//视频秒数录制 默认60s int
 	.isDragFrame(false)// 是否可拖动裁剪框(固定)
  	.forResult(PictureConfig.CHOOSE_REQUEST);//结果回调onActivityResult code     
@@ -219,7 +219,7 @@ Glide.with(context).load(url).apply(options).into(imageView);
 ```
  //包括裁剪和压缩后的缓存，要在上传成功后调用，注意：需要系统sd卡权限 
  PictureFileUtils.deleteCacheDirFile(MainActivity.this);
- 
+
 ```
 ## 主题配置
 
@@ -283,20 +283,20 @@ Glide.with(context).load(url).apply(options).into(imageView);
 
 ## 常用功能
 
-******启动相册并拍照******       
+******启动相册并拍照******      
 ```
  PictureSelector.create(MainActivity.this)
        .openGallery(PictureMimeType.ofImage())
        .forResult(PictureConfig.CHOOSE_REQUEST);
-       
+
 ```
-******单独启动拍照或视频 根据PictureMimeType自动识别******       
+******单独启动拍照或视频 根据PictureMimeType自动识别******      
 ```
   PictureSelector.create(MainActivity.this)
        .openCamera(PictureMimeType.ofImage())
        .forResult(PictureConfig.CHOOSE_REQUEST);
 ```
-******预览图片******       
+******预览图片******      
 ```
 // 预览图片 可自定长按保存路径
 *注意 .themeStyle(themeId)；不可少，否则闪退...
@@ -305,7 +305,7 @@ PictureSelector.create(MainActivity.this).themeStyle(themeId).openExternalPrevie
 PictureSelector.create(MainActivity.this).themeStyle(themeId).openExternalPreview(position, selectList);
 
 ```
-******预览视频****** 
+******预览视频******
 ```
 PictureSelector.create(MainActivity.this).externalPictureVideo(video_path);
 
@@ -338,10 +338,16 @@ PictureSelector.create(MainActivity.this).externalPictureVideo(video_path);
 ## 更新日志
 
 # 当前版本：
+* v2.2.4
+1.适配Android Q 版本
+2.修复Android Q多图裁剪失败问题
+3.升级glide、Luan 最新版本
+4.修复了部分已知问题
+
+# 历史版本：
 * v2.2.3
 * 1.修复沉浸式在部分机型标题栏遮挡情况
 
-# 历史版本：
 * v2.2.2
 * 1.优化外部预览界面样式不同步问题
 * 2.优化沉浸式方案，适配更多机型
@@ -409,14 +415,14 @@ PictureSelector.create(MainActivity.this).externalPictureVideo(video_path);
 * 修复录音不显示时长问题
 
 # 项目使用第三方库：
-* glide:4.5.0	
+* glide:4.5.0
 * rxjava:2.0.5
 * rxandroid:2.0.1
 * PhotoView:2.1.3
 * luban
 * 裁剪使用ucrop
 
-## 混淆配置 
+## 混淆配置
 ```
 #PictureSelector 2.0
 -keep class com.luck.picture.lib.** { *; }
@@ -424,7 +430,7 @@ PictureSelector.create(MainActivity.this).externalPictureVideo(video_path);
 -dontwarn com.yalantis.ucrop**
 -keep class com.yalantis.ucrop** { *; }
 -keep interface com.yalantis.ucrop** { *; }
-   
+  
  #rxjava
 -dontwarn sun.misc.**
 -keepclassmembers class rx.internal.util.unsafe.*ArrayQueue*Field* {
@@ -464,7 +470,7 @@ PictureSelector.create(MainActivity.this).externalPictureVideo(video_path);
 
 ```
 ## 打赏
-# ~如果您觉得好，对你有帮助，可以给我一点打赏当做鼓励，蚊子再小也是肉呀(*^__^*) 嘻嘻…… 
+# ~如果您觉得好，对你有帮助，可以给我一点打赏当做鼓励，蚊子再小也是肉呀(*^__^*) 嘻嘻……
 ![image](https://github.com/LuckSiege/PictureSelector/blob/master/image/apply.png)
 
 ## 兼容性测试
